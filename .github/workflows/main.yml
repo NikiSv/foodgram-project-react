@@ -1,8 +1,6 @@
 name: Main Goodgram Workflow
 
-on:
-  push:
-    - main
+on: [push]
 
 jobs:
   tests:
