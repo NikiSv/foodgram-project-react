@@ -1,17 +1,14 @@
 import re
 
 from djoser.serializers import UserCreateSerializer, UserSerializer
-
+from drf_extra_fields.fields import Base64ImageField
+from recipes.models import (Favorite, Ingredient, IngredientForRecipe, Recipe,
+                            ShoppingCart, Tag)
 from rest_framework.fields import CharField, IntegerField
 from rest_framework.serializers import (ModelSerializer,
                                         PrimaryKeyRelatedField,
                                         SerializerMethodField, ValidationError)
 from rest_framework.validators import UniqueTogetherValidator
-
-from drf_extra_fields.fields import Base64ImageField
-
-from recipes.models import (Favorite, Ingredient, IngredientForRecipe,
-                            Recipe, ShoppingCart, Tag)
 from users.models import CustomUser, Subscription
 
 
@@ -248,9 +245,9 @@ class FavoriteSerializer(ModelSerializer):
         model = Favorite
         fields = '__all__'
         validators = [UniqueTogetherValidator(
-                queryset=Favorite.objects.all(),
-                fields=('user', 'recipe'),
-                message='Вы уже добавили этот рецепт в избранное')]
+            queryset=Favorite.objects.all(),
+            fields=('user', 'recipe'),
+            message='Вы уже добавили этот рецепт в избранное')]
 
     def to_representation(self, instance):
         request = self.context.get('request')
@@ -264,9 +261,9 @@ class ShortCartRecipeSerializer(ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
         validators = [UniqueTogetherValidator(
-                queryset=ShoppingCart.objects.all(),
-                fields=('user', 'recipe'),
-                message='Вы уже добавили этот рецепт в список покупок')]
+            queryset=ShoppingCart.objects.all(),
+            fields=('user', 'recipe'),
+            message='Вы уже добавили этот рецепт в список покупок')]
 
 
 class ShoppingCartSerializer(ModelSerializer):
@@ -274,9 +271,9 @@ class ShoppingCartSerializer(ModelSerializer):
         model = ShoppingCart
         fields = '__all__'
         validators = [UniqueTogetherValidator(
-                queryset=ShoppingCart.objects.all(),
-                fields=('user', 'recipe'),
-                message='Рецепт уже добавлен в список покупок')]
+            queryset=ShoppingCart.objects.all(),
+            fields=('user', 'recipe'),
+            message='Рецепт уже добавлен в список покупок')]
 
     def to_representation(self, instance):
         request = self.context.get('request')

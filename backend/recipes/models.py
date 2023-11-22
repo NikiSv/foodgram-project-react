@@ -1,7 +1,6 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import UniqueConstraint
-
 from users.models import CustomUser
 
 
@@ -122,8 +121,8 @@ class Favorite(models.Model):
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
         constraints = [UniqueConstraint(
-                fields=['user', 'recipe'],
-                name='unique_favourite')]
+            fields=['user', 'recipe'],
+            name='unique_favourite')]
 
     def __str__(self):
         return f'Вы добавили "{self.recipe}" в Избранное'

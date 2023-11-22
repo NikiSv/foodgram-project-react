@@ -8,7 +8,8 @@ class Command(BaseCommand):
     help = 'Загрузка ингридиентов из json файла в БД'
 
     def handle(self, *args, **options):
-        with open('recipes/data/ingredients.json', 'r', encoding='utf-8') as file:
+        with open('recipes/data/ingredients.json',
+                  'r', encoding='utf-8') as file:
             json_reader = json.load(file)
             for row in json_reader:
                 ingredient = Ingredient(

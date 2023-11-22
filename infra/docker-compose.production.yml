@@ -6,9 +6,7 @@ volumes:
 
 services:
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: niki007/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
 
