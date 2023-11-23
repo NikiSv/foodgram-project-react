@@ -24,6 +24,8 @@ services:
   db:
     image: postgres:13.10
     env_file: .env
+    environment:
+    - POSTGRES_PASSWORD=django
     volumes:
       - pg_data:/var/lib/postgresql/data
 
