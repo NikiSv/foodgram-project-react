@@ -215,7 +215,7 @@ class RecipeViewSet(ModelViewSet):
         pdfmetrics.registerFont(TTFont('DejaVuSerif-Bold',
                                        'DejaVuSerif-Bold.ttf'))
         pdf.setFont('DejaVuSerif-Bold', 14)
-        pdf.drawString(100, 50)
+        pdf.drawString(100, 50, 'Список покупок:')
         y = 670
         page_height = 800
         for name, total_amount in ingredient_totals.items():
