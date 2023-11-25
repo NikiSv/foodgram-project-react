@@ -16,7 +16,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from users.models import CustomUser, Subscription
 
 from .pagination import CustomPagination
-from .permissions import IsAuthorOrReadOnly
+from .permissions import IsAuthorOrReadOnly, AllowAnyRead
 from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           IngredientForRecipe, IngredientSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
@@ -28,6 +28,7 @@ class CustomUserViewSet(UserViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     pagination_class = CustomPagination
+    permission_classes = [AllowAnyRead]
 
     # def get_permissions(self):
     #     if self.action == "retrieve":
