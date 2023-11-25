@@ -50,7 +50,7 @@ DJOSER = {
         'user_create': 'api.serializers.CustomUserRegistrationSerializer',
         'current_user': 'api.serializers.CustomUserSerializer'},
     'PERMISSIONS': {
-        'user_list': ['rest_framework.permissions.AllowAny'],
+        'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
     }
 }
