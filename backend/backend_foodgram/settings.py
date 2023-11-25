@@ -11,7 +11,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', default='token')
 
 DEBUG = bool(os.getenv('DEBUG', 'False').lower())
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='eatgram.ddns.net').split(',')
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='eatgram.ddns.net').split(',')
+ALLOWED_HOSTS = ['*']
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
