@@ -19,7 +19,7 @@ services:
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/static/
-      - media:/media/
+      - media:/media
 
   db:
     image: postgres:13.10
@@ -34,6 +34,6 @@ services:
     env_file: .env
     volumes:
       - static:/app/static/
-      - media:/media/
+      - media:/media
     depends_on:
       - db
