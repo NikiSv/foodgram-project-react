@@ -44,9 +44,9 @@
 3. Запишите в Secrets на GitHub следующие ключи:
      ```
      DB_ENGINE=django.db.backends.postgresql
-     DB_NAME=postgres
-     POSTGRES_USER=postgres
-     POSTGRES_PASSWORD=postgres
+     POSTGRES_DB
+     POSTGRES_USER
+     POSTGRES_PASSWORD
      DB_HOST=db 
      DB_PORT=5432
      HOST
