@@ -29,10 +29,10 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     pagination_class = CustomPagination
 
-    def get_permissions(self):
-        if self.action == "retrieve":
-            self.permission_classes = [AllowAny]
-        return super().get_permissions()
+    # def get_permissions(self):
+    #     if self.action == "retrieve":
+    #         self.permission_classes = [AllowAny]
+    #     return super().get_permissions()
 
     @action(detail=True, methods=['post', 'delete'],
             url_path='subscribe', permission_classes=[IsAuthorOrReadOnly])
@@ -215,7 +215,7 @@ class RecipeViewSet(ModelViewSet):
         pdfmetrics.registerFont(TTFont('DejaVuSerif-Bold',
                                        'DejaVuSerif-Bold.ttf'))
         pdf.setFont('DejaVuSerif-Bold', 14)
-        pdf.drawString(100, 50, 'Список покупок:')
+        pdf.drawString(100, 50, ' ')
         y = 670
         page_height = 800
         for name, total_amount in ingredient_totals.items():
