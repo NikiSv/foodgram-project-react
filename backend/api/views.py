@@ -28,21 +28,11 @@ class CustomUserViewSet(UserViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     pagination_class = CustomPagination
-    permission_classes = [AllowAny]
 
     # def get_permissions(self):
     #     if self.action == 'retrieve':
     #         self.permission_classes = [AllowAny]
     #     return super().get_permissions()
-
-    @action(detail=False, methods=['get'], url_path='me',
-            permission_classes=(IsAuthenticated,),
-            serializer_class=CustomUserSerializer)
-    def get_me(self, request):
-        serializer = CustomUserSerializer(
-            instance=request.user,
-            context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post', 'delete'],
             url_path='subscribe', permission_classes=[IsAuthorOrReadOnly])
@@ -54,12 +44,10 @@ class CustomUserViewSet(UserViewSet):
                 return Response('Нельзя подписаться на самого себя',
                                 status=status.HTTP_400_BAD_REQUEST)
             try:
-                # Попытка получить существующую подписку
                 Subscription.objects.get(user=user, author=author)
                 return Response('Подписка уже существует',
                                 status=status.HTTP_400_BAD_REQUEST)
             except Subscription.DoesNotExist:
-                # Если подписка не существует, создать новую
                 Subscription.objects.create(user=user, author=author)
                 serializer = SubscribeSerializer(
                     author, context={'request': request})
