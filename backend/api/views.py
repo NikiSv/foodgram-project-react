@@ -35,8 +35,12 @@ class CustomUserViewSet(UserViewSet):
         author = get_object_or_404(CustomUser, id=id)
         self.check_object_permissions(request, author)
         serializer = CustomUserSerializer(author)
-        self.permission_classes = [CurrentUserOrAdminOrReadOnly]
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_permissions(self):
+        if self.action == "retrieve":
+            self.permission_classes = [AllowAny]
+        return super().get_permissions()
 
     @action(detail=True, methods=['post', 'delete'],
             url_path='subscribe', permission_classes=[IsAuthorOrReadOnly])
