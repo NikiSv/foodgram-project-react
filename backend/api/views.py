@@ -31,7 +31,7 @@ class CustomUserViewSet(UserViewSet):
     pagination_class = CustomPagination
 
     def get_permissions(self):
-        if self.action == 'list':
+        if self.action == 'retrieve':
             permission_classes = [AllowAny()]
         else:
             permission_classes = [CurrentUserOrAdminOrReadOnly()]
