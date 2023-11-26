@@ -15,4 +15,6 @@ urlpatterns = (
     path('', include(router.urls)),
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
+    path('user/<int:pk>/', CustomUserViewSet.as_view(
+        {'get': 'retrieve'}), name='user-detail'),
 )

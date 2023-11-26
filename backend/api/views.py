@@ -32,9 +32,9 @@ class CustomUserViewSet(UserViewSet):
 
     def get_permissions(self):
         if self.action == 'retrieve':
-            permission_classes = [AllowAny()]
+            permission_classes = [AllowAny]
         else:
-            permission_classes = [CurrentUserOrAdminOrReadOnly()]
+            permission_classes = [CurrentUserOrAdminOrReadOnly]
 
         return [permission() for permission in permission_classes]
 
