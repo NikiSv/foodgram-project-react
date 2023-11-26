@@ -3,7 +3,6 @@ from io import BytesIO
 from api.filters import IngredientFilter, RecipeFilter
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from djoser.permissions import CurrentUserOrAdminOrReadOnly
 from djoser.views import UserViewSet
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from reportlab.pdfbase import pdfmetrics
@@ -30,15 +29,8 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     pagination_class = CustomPagination
 
-    def retrieve(self, request, id):
-        self.permission_classes = [AllowAny]
-        author = get_object_or_404(CustomUser, id=id)
-        self.check_object_permissions(request, author)
-        serializer = CustomUserSerializer(author)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
     def get_permissions(self):
-        if self.action == "retrieve":
+        if self.action == 'retrieve':
             self.permission_classes = [AllowAny]
         return super().get_permissions()
 
