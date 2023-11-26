@@ -30,13 +30,13 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     pagination_class = CustomPagination
 
-    def get_permissions(self):
-        if self.action == 'retrieve':
-            permission_classes = [AllowAny]
-        else:
-            permission_classes = [CurrentUserOrAdminOrReadOnly]
-
-        return [permission() for permission in permission_classes]
+    def retrieve(self, request, id):
+        self.permission_classes = [AllowAny]
+        author = get_object_or_404(CustomUser, id=id)
+        self.check_object_permissions(request, author)
+        serializer = CustomUserSerializer(author)
+        self.permission_classes = [CurrentUserOrAdminOrReadOnly]
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post', 'delete'],
             url_path='subscribe', permission_classes=[IsAuthorOrReadOnly])
