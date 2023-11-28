@@ -2,13 +2,14 @@ import re
 
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import (Favorite, Ingredient, IngredientForRecipe, Recipe,
-                            ShoppingCart, Tag)
 from rest_framework.fields import CharField, IntegerField
 from rest_framework.serializers import (ModelSerializer,
                                         PrimaryKeyRelatedField,
                                         SerializerMethodField, ValidationError)
 from rest_framework.validators import UniqueTogetherValidator
+
+from recipes.models import (Favorite, Ingredient, IngredientForRecipe,
+                            Recipe, ShoppingCart, Tag)
 from users.models import CustomUser, Subscription
 
 
@@ -22,22 +23,29 @@ class CustomUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, data):
         user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return Subscription.objects.filter(user=user, author=data).exists()
+        if user.is_authenticated:
+            return Subscription.objects.filter(user=user, author=data).exists()
+        return False
+
+    def validate(self, data):
+        user = self.context.get('request').user
+        author_id = data.get('id')
+        if user.id == author_id:
+            raise ValidationError('Нельзя подписаться на самого себя')
+        return data
 
 
 class CustomUserRegistrationSerializer(UserCreateSerializer):
     username = CharField(max_length=150)
 
-    def validate_username(self, value):
+    def validate_username(self, data):
         pattern = r'^[\w.@+-]+$'
-        if not re.match(pattern, value):
+        if not re.match(pattern, data):
             raise ValidationError('Запрещенные символы')
 
-        if CustomUser.objects.filter(username=value).exists():
+        if CustomUser.objects.filter(username=data).exists():
             raise ValidationError('Пользователь с таким именем уже существует')
-        return value
+        return data
 
     class Meta:
         model = CustomUser
@@ -62,8 +70,7 @@ class SubscribeSerializer(CustomUserSerializer):
         recipes_limit = self.context.get('request').query_params.get(
             'recipes_limit')
         if recipes_limit:
-            recipes_limit = int(recipes_limit)
-            recipes = recipes[:recipes_limit]
+            recipes = recipes[:int(recipes_limit)]
         serializer = ShortCartRecipeSerializer(recipes, many=True)
         return serializer.data
 
@@ -92,6 +99,12 @@ class IngredientPostSerializer(ModelSerializer):
     class Meta:
         model = IngredientForRecipe
         fields = ('id', 'amount')
+
+    def validate_amount(self, amount):
+        if amount is None or amount <= 0 or amount >= 10000:
+            raise ValidationError(
+                'Количество не может быть 0 или больше 10000')
+        return amount
 
 
 class RecipeCreateSerializer(ModelSerializer):
@@ -124,11 +137,6 @@ class RecipeCreateSerializer(ModelSerializer):
                 raise ValidationError('Ингредиенты не могут повторяться')
             ingredient_ids.add(ingredient_id)
 
-            # Проверка количества ингредиента
-            amount = ingredient_data.get('amount')
-            if amount is None or amount <= 0:
-                raise ValidationError('Добавьте количество ингредиента')
-
         # Проверка обязательности добавления тегов
         tags = data.get('tags')
         if not tags:
@@ -144,7 +152,8 @@ class RecipeCreateSerializer(ModelSerializer):
 
         return data
 
-    def create_ingredients(self, ingredients, recipe):
+    @staticmethod
+    def create_ingredients(ingredients, recipe):
         ingredient_for_recipe_list = []
         for recipe_ingredient in ingredients:
             ingredient_id = recipe_ingredient['ingredient'].id
@@ -194,6 +203,11 @@ class RecipeCreateSerializer(ModelSerializer):
         return RecipeReadSerializer(
             instance, context={'request': request}).data
 
+# "Хм, а точно ли нужен этот сериализатор? Выглядит так, что можно обойтись
+# только сериализатором выше"
+# по условию редока при создании рецепта мы не передаем поля
+# exclude = ('id', 'author'), а при просмотре нужны
+
 
 class RecipeReadSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
@@ -230,14 +244,14 @@ class RecipeReadSerializer(ModelSerializer):
     def get_is_favorited(self, data):
         request = self.context.get('request')
         return (request and request.user.is_authenticated
-                and Favorite.objects.filter(
-                    user=request.user, recipe=data).exists())
+                and Favorite.objects.filter(user=request.user,
+                                            recipe=data).exists())
 
     def get_is_in_shopping_cart(self, data):
         request = self.context.get('request')
         return (request and request.user.is_authenticated
-                and ShoppingCart.objects.filter(
-                    user=request.user, recipe=data).exists())
+                and ShoppingCart.objects.filter(user=request.user,
+                                                recipe=data).exists())
 
 
 class FavoriteSerializer(ModelSerializer):
@@ -264,6 +278,10 @@ class ShortCartRecipeSerializer(ModelSerializer):
             queryset=ShoppingCart.objects.all(),
             fields=('user', 'recipe'),
             message='Вы уже добавили этот рецепт в список покупок')]
+
+# "Так-же класс у нас выше (FavoriteSerializer).
+# Давай избавимся от дубликатов за счет создания общего класса"
+# так у нас валидация разных моделей Favorite и ShoppingCart
 
 
 class ShoppingCartSerializer(ModelSerializer):

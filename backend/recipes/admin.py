@@ -1,14 +1,14 @@
 from django.contrib import admin
 from django.contrib.admin import display
 
-from .form import TagAdminForm
-from .models import (Favorite, Ingredient, IngredientForRecipe, Recipe,
-                     ShoppingCart, Tag)
+# from .form import TagAdminForm
+from .models import (Favorite, Ingredient, IngredientForRecipe,
+                     Recipe, ShoppingCart, Tag)
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    form = TagAdminForm
+    model = Tag
     list_display = ('id', 'name', 'color', 'slug')
     ordering = ('id',)
     search_fields = ('name',)

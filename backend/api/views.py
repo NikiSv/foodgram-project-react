@@ -1,10 +1,9 @@
 from io import BytesIO
 
-from api.filters import IngredientFilter, RecipeFilter
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
@@ -13,8 +12,10 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
-from users.models import CustomUser, Subscription
 
+from api.filters import IngredientFilter, RecipeFilter
+from users.models import CustomUser, Subscription
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from .pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CustomUserSerializer, FavoriteSerializer,
@@ -29,41 +30,31 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     pagination_class = CustomPagination
 
-    # def get_permissions(self):
-    #     if self.action == 'retrieve':
-    #         self.permission_classes = [AllowAny]
-    #     return super().get_permissions()
-
-    @action(detail=True, methods=['post', 'delete'],
+    @action(detail=True, methods=['post'],
             url_path='subscribe', permission_classes=[IsAuthorOrReadOnly])
     def subscribe(self, request, id):
         user = request.user
         author = get_object_or_404(CustomUser, id=id)
-        if request.method == 'POST':
-            if user == author:
-                return Response('Нельзя подписаться на самого себя',
-                                status=status.HTTP_400_BAD_REQUEST)
-            try:
-                Subscription.objects.get(user=user, author=author)
-                return Response('Подписка уже существует',
-                                status=status.HTTP_400_BAD_REQUEST)
-            except Subscription.DoesNotExist:
-                Subscription.objects.create(user=user, author=author)
-                serializer = SubscribeSerializer(
-                    author, context={'request': request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        elif request.method == 'DELETE':
-            try:
-                subscription = Subscription.objects.get(
-                    user=user, author=author)
-                subscription.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            except Subscription.DoesNotExist:
-                return Response('Подписка не найдена',
-                                status=status.HTTP_400_BAD_REQUEST)
-            except CustomUser.DoesNotExist:
-                return Response('Автор не найден',
-                                status=status.HTTP_400_BAD_REQUEST)
+        subscription = Subscription.objects.filter(
+            user=user, author=author).first()
+        if subscription:
+            return Response('Подписка уже существует',
+                            status=status.HTTP_400_BAD_REQUEST)
+        Subscription.objects.create(user=request.user, author=author)
+        serializer = SubscribeSerializer(author, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @subscribe.mapping.delete
+    def delete_subscribe(self, request, id):
+        user = request.user
+        author = get_object_or_404(Subscription, author=id)
+        subscription = Subscription.objects.filter(
+            user=user, author=author).first()
+        if not subscription:
+            return Response('Подписка не найдена',
+                            status=status.HTTP_400_BAD_REQUEST)
+        subscription.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'],
             url_path='subscriptions',

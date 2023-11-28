@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'recipes.apps.RecipesConfig',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
+    'colorfield',
 ]
 
 REST_FRAMEWORK = {
