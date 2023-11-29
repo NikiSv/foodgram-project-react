@@ -47,20 +47,23 @@ class CustomUserRegistrationSerializer(UserCreateSerializer):
 
 
 class SubscribeSerializer(CustomUserSerializer):
+    user = PrimaryKeyRelatedField(read_only=True)
+    author = PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     is_subscribed = SerializerMethodField()
     recipes = SerializerMethodField()
     recipes_count = SerializerMethodField()
 
     class Meta:
-        model = CustomUser
-        fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'recipes', 'recipes_count')
-        read_only_fields = ('email', 'username', 'first_name', 'last_name',
-                            'is_subscribed', 'recipes', 'recipes_count')
+        model = Subscription
+        fields = ('user', 'author')
+        # fields = ('email', 'id', 'username', 'first_name',
+        #           'last_name', 'is_subscribed', 'recipes', 'recipes_count')
+        # read_only_fields = ('email', 'username', 'first_name', 'last_name',
+        #                     'is_subscribed', 'recipes', 'recipes_count')
 
     def validate(self, data):
         user = self.context.get('request').user
-        author_id = data.get('id')
+        author_id = data.get('author')
         if user.id == author_id:
             raise ValidationError('Нельзя подписаться на самого себя')
         return data
