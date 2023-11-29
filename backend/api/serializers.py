@@ -69,21 +69,28 @@ class SubscribeSerializer(CustomUserSerializer):
     def get_recipes_count(self, user):
         return user.recipes.count()
 
-
-class SubscriptionSerializer(ModelSerializer):
-    user = PrimaryKeyRelatedField(read_only=True)
-    author = PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-
-    class Meta:
-        model = Subscription
-        fields = ('user', 'author')
-
     def validate(self, data):
-        user = data.get('user')
-        author = data.get('author')
+        user = self.context.get('request').user
+        author = self.instance
         if user == author:
             raise ValidationError('Нельзя подписаться на самого себя')
         return data
+
+
+# class SubscriptionSerializer(ModelSerializer):
+#     user = PrimaryKeyRelatedField(read_only=True)
+#     author = PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+
+#     class Meta:
+#         model = Subscription
+#         fields = ('user', 'author')
+
+#     def validate(self, data):
+#         user = data.get('user')
+#         author = data.get('author')
+#         if user == author:
+#             raise ValidationError('Нельзя подписаться на самого себя')
+#         return data
 
 
 class TagSerializer(ModelSerializer):

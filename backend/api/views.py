@@ -22,7 +22,7 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           IngredientForRecipe, IngredientSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
                           ShoppingCartSerializer, SubscribeSerializer,
-                          SubscriptionSerializer, TagSerializer)
+                          TagSerializer)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -35,8 +35,6 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, id):
         user = request.user
         author = get_object_or_404(CustomUser, id=id)
-        serializer_sub = SubscriptionSerializer(data={'user': user.id, 'author': author.id})
-        serializer_sub.is_valid(raise_exception=True)
         subscription = Subscription.objects.filter(
             user=user, author=author).first()
         if subscription:
