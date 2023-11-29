@@ -71,13 +71,19 @@ class SubscribeSerializer(CustomUserSerializer):
 
 
 class SubscriptionSerializer(ModelSerializer):
+    user = PrimaryKeyRelatedField(read_only=True)
+    author = PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+
     class Meta:
         model = Subscription
         fields = ('user', 'author')
-        validators = [UniqueTogetherValidator(
-            queryset=Subscription.objects.all(),
-            fields=('user', 'author'),
-            message='Нельзя подписаться на самого себя')]
+
+    def validate(self, data):
+        user = data.get('user')
+        author = data.get('author')
+        if user == author:
+            raise ValidationError('Нельзя подписаться на самого себя')
+        return data
 
 
 class TagSerializer(ModelSerializer):
