@@ -35,6 +35,8 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, id):
         user = request.user
         author = get_object_or_404(CustomUser, id=id)
+        serializer_sub = SubscribeSerializer(data={'user': user.id, 'id': id})
+        serializer_sub.is_valid(raise_exception=True)
         subscription = Subscription.objects.filter(
             user=user, author=author).first()
         if subscription:
