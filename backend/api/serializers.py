@@ -244,12 +244,6 @@ class RecipeReadSerializer(ModelSerializer):
                 and ShoppingCart.objects.filter(user=request.user,
                                                 recipe=data).exists())
 
-    def to_representation(self, instance):
-        request = self.context.get('request')
-        serializer = RecipeReadSerializer(
-            instance, context={'request': request})
-        return serializer.data
-
 
 class FavoriteOrShoppingCartSerializer(ModelSerializer):
     def to_representation(self, instance):
