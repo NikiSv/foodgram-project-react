@@ -47,7 +47,7 @@ class CustomUserViewSet(UserViewSet):
     @subscribe.mapping.delete
     def delete_subscribe(self, request, id):
         user = request.user
-        author = get_object_or_404(Subscription, author=id)
+        author = get_object_or_404(CustomUser, id=id)
         subscription = Subscription.objects.filter(
             user=user, author=author).first()
         if not subscription:
