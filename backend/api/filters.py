@@ -1,4 +1,4 @@
-from django_filters import (BooleanFilter, CharFilter, FilterSet,
+from django_filters import (NumberFilter, CharFilter, FilterSet,
                             ModelMultipleChoiceFilter)
 
 from recipes.models import Ingredient, Recipe, Tag
@@ -17,9 +17,9 @@ class RecipeFilter(FilterSet):
         queryset=Tag.objects.all(),
         field_name='tags__slug',
         to_field_name='slug')
-    is_favorited = BooleanFilter(
+    is_favorited = NumberFilter(
         method='filter_is_favorited')
-    is_in_shopping_cart = BooleanFilter(
+    is_in_shopping_cart = NumberFilter(
         method='filter_is_in_shopping_cart')
 
     def filter_is_favorited(self, queryset, name, value):

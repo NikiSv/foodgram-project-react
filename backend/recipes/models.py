@@ -58,7 +58,6 @@ class Recipe(models.Model):
         related_name='recipes')
     tags = models.ManyToManyField(
         Tag,
-        related_name='recipes',
         verbose_name='Теги',
         blank=False)
     ingredients = models.ManyToManyField(
@@ -150,7 +149,7 @@ class ShoppingCart(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Список покупок'
-        ordering = ['id']
+        # ordering = ['id']
 
     def __str__(self):
         return f'Вы добавили "{self.recipe}" в список покупок'
