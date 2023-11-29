@@ -8,8 +8,8 @@ from rest_framework.serializers import (ModelSerializer,
                                         SerializerMethodField, ValidationError)
 from rest_framework.validators import UniqueTogetherValidator
 
-from recipes.models import (Favorite, Ingredient, IngredientForRecipe,
-                            Recipe, ShoppingCart, Tag)
+from recipes.models import (Favorite, Ingredient, IngredientForRecipe, Recipe,
+                            ShoppingCart, Tag)
 from users.models import CustomUser, Subscription
 
 

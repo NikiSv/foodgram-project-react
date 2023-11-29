@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.contrib.admin import display
 
 # from .form import TagAdminForm
-from .models import (Favorite, Ingredient, IngredientForRecipe,
-                     Recipe, ShoppingCart, Tag)
+from .models import (Favorite, Ingredient, IngredientForRecipe, Recipe,
+                     ShoppingCart, Tag)
 
 
 @admin.register(Tag)

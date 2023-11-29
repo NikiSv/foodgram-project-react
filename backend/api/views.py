@@ -3,7 +3,6 @@ from io import BytesIO
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
@@ -14,8 +13,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from api.filters import IngredientFilter, RecipeFilter
-from users.models import CustomUser, Subscription
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from users.models import CustomUser, Subscription
+
 from .pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CustomUserSerializer, FavoriteSerializer,
