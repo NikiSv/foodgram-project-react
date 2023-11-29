@@ -120,37 +120,33 @@ class RecipeCreateSerializer(ModelSerializer):
         exclude = ('id', 'author')
 
     def validate(self, data):
-        # Проверка обязательности добавления ингредиентов
-        ingredients = data.get('ingredients', [])
-        if not ingredients:
-            raise ValidationError('Добавьте ингредиенты')
+        if self.context['request'].method == 'POST':
+            ingredients = data.get('ingredients', [])
+            if not ingredients:
+                raise ValidationError('Добавьте ингредиенты')
 
-        # Проверка уникальности ингредиентов
-        ingredient_ids = set()
-        for ingredient_data in ingredients:
-            ingredient = ingredient_data.get('ingredient')
-            if not ingredient:
-                raise ValidationError('Ингредиент не может быть пустым')
+            ingredient_ids = set()
+            for ingredient_data in ingredients:
+                ingredient = ingredient_data.get('ingredient')
+                if not ingredient:
+                    raise ValidationError('Ингредиент не может быть пустым')
 
-            ingredient_id = ingredient.id
-            if ingredient_id in ingredient_ids:
-                raise ValidationError('Ингредиенты не могут повторяться')
-            ingredient_ids.add(ingredient_id)
+                ingredient_id = ingredient.id
+                if ingredient_id in ingredient_ids:
+                    raise ValidationError('Ингредиенты не могут повторяться')
+                ingredient_ids.add(ingredient_id)
 
-        # Проверка обязательности добавления тегов
-        tags = data.get('tags')
-        if not tags:
-            raise ValidationError('Добавьте теги')
+            tags = data.get('tags')
+            if not tags:
+                raise ValidationError('Добавьте теги')
 
-        # Проверка уникальности тегов
-        if len(tags) != len(set(tags)):
-            raise ValidationError('Теги не могут повторяться')
+            if len(tags) != len(set(tags)):
+                raise ValidationError('Теги не могут повторяться')
 
-        # Проверка обязательности добавления изображения
-        if not data.get('image'):
-            raise ValidationError('Добавьте изображение')
+            if not data.get('image'):
+                raise ValidationError('Добавьте изображение')
 
-        return data
+            return data
 
     @staticmethod
     def create_ingredients(ingredients, recipe):
@@ -179,8 +175,7 @@ class RecipeCreateSerializer(ModelSerializer):
         recipe.ingredients.clear()
         recipe.tags.set(tags)
         self.create_ingredients(ingredients, recipe)
-        return super(RecipeCreateSerializer, self).update(
-            recipe, validated_data)
+        return super().update(recipe, validated_data)
 
     def get_is_favorited(self, data):
         if self.context.get('request').user.is_authenticated:
@@ -200,13 +195,9 @@ class RecipeCreateSerializer(ModelSerializer):
 
     def to_representation(self, instance):
         request = self.context.get('request')
-        return RecipeReadSerializer(
-            instance, context={'request': request}).data
-
-# "Хм, а точно ли нужен этот сериализатор? Выглядит так, что можно обойтись
-# только сериализатором выше"
-# по условию редока при создании рецепта мы не передаем поля
-# exclude = ('id', 'author'), а при просмотре нужны
+        serializer = RecipeReadSerializer(
+            instance, context={'request': request})
+        return serializer.data
 
 
 class RecipeReadSerializer(ModelSerializer):
@@ -253,8 +244,22 @@ class RecipeReadSerializer(ModelSerializer):
                 and ShoppingCart.objects.filter(user=request.user,
                                                 recipe=data).exists())
 
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        serializer = RecipeReadSerializer(
+            instance, context={'request': request})
+        return serializer.data
 
-class FavoriteSerializer(ModelSerializer):
+
+class FavoriteOrShoppingCartSerializer(ModelSerializer):
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        return ShortCartRecipeSerializer(
+            instance.recipe,
+            context={'request': request}).data
+
+
+class FavoriteSerializer(FavoriteOrShoppingCartSerializer):
     class Meta:
         model = Favorite
         fields = '__all__'
@@ -263,11 +268,15 @@ class FavoriteSerializer(ModelSerializer):
             fields=('user', 'recipe'),
             message='Вы уже добавили этот рецепт в избранное')]
 
-    def to_representation(self, instance):
-        request = self.context.get('request')
-        return ShortCartRecipeSerializer(
-            instance.recipe,
-            context={'request': request}).data
+
+class ShoppingCartSerializer(FavoriteOrShoppingCartSerializer):
+    class Meta:
+        model = ShoppingCart
+        fields = '__all__'
+        validators = [UniqueTogetherValidator(
+            queryset=ShoppingCart.objects.all(),
+            fields=('user', 'recipe'),
+            message='Рецепт уже добавлен в список покупок')]
 
 
 class ShortCartRecipeSerializer(ModelSerializer):
@@ -278,23 +287,3 @@ class ShortCartRecipeSerializer(ModelSerializer):
             queryset=ShoppingCart.objects.all(),
             fields=('user', 'recipe'),
             message='Вы уже добавили этот рецепт в список покупок')]
-
-# "Так-же класс у нас выше (FavoriteSerializer).
-# Давай избавимся от дубликатов за счет создания общего класса"
-# так у нас валидация разных моделей Favorite и ShoppingCart
-
-
-class ShoppingCartSerializer(ModelSerializer):
-    class Meta:
-        model = ShoppingCart
-        fields = '__all__'
-        validators = [UniqueTogetherValidator(
-            queryset=ShoppingCart.objects.all(),
-            fields=('user', 'recipe'),
-            message='Рецепт уже добавлен в список покупок')]
-
-    def to_representation(self, instance):
-        request = self.context.get('request')
-        return ShortCartRecipeSerializer(
-            instance.recipe,
-            context={'request': request}).data
