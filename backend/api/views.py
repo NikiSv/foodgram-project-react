@@ -51,7 +51,8 @@ class CustomUserViewSet(UserViewSet):
         #     return Response('Подписка уже существует',
         #                     status=status.HTTP_400_BAD_REQUEST)
         # Subscription.objects.create(user=request.user, author=author)
-        # serializer = SubscribeSerializer(author, context={'request': request})
+        # serializer = SubscribeSerializer(
+        # author, context={'request': request})
         # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
