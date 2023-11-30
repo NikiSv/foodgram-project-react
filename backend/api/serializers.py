@@ -47,6 +47,7 @@ class CustomUserRegistrationSerializer(UserCreateSerializer):
 
 
 class SubscribeSerializer(CustomUserSerializer):
+    is_subscribed = SerializerMethodField()
     recipes = SerializerMethodField()
     recipes_count = SerializerMethodField()
 
@@ -71,13 +72,16 @@ class SubscribeSerializer(CustomUserSerializer):
 
 
 class SubscriptionSerializer(ModelSerializer):
+    user = PrimaryKeyRelatedField(read_only=True)
+    author = PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+
     class Meta:
         model = Subscription
         fields = ('user', 'author')
-        validators = [UniqueTogetherValidator(
-            queryset=Subscription.objects.all(),
-            fields=('user', 'author'),
-            message='Подписка уже существует')]
+        # validators = [UniqueTogetherValidator(
+        #     queryset=Subscription.objects.all(),
+        #     fields=('user', 'author'),
+        #     message='Подписка уже существует')]
 
     def validate(self, data):
         user = data['user']
@@ -89,13 +93,10 @@ class SubscriptionSerializer(ModelSerializer):
             user=user, author=author).first()
         if not subscription:
             raise ValidationError('Подписка не найдена')
-
         return data
 
-    def to_representation(self, instance):
-        request = self.context.get('request')
-        return SubscribeSerializer(
-            instance.author, context={'request': request}).data
+    def create(self, validated_data):
+        return Subscription.objects.create(**validated_data)
 
 
 class TagSerializer(ModelSerializer):
