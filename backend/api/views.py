@@ -40,13 +40,12 @@ class CustomUserViewSet(UserViewSet):
             context={'request': request})
         serializer.is_valid(raise_exception=True)
         subscription = serializer.save()
+
         response_serializer = SubscribeSerializer(
             subscription.author, context={'request': request})
 
-        return Response(
-            response_serializer.data, status=status.HTTP_201_CREATED)
-        # Subscription.objects.create(user=request.user, author=author)
-        # return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(response_serializer.data,
+                        status=status.HTTP_201_CREATED)
         # user = request.user
         # author = get_object_or_404(CustomUser, id=id)
         # subscription = Subscription.objects.filter(
@@ -55,8 +54,24 @@ class CustomUserViewSet(UserViewSet):
         #     return Response('Подписка уже существует',
         #                     status=status.HTTP_400_BAD_REQUEST)
         # Subscription.objects.create(user=request.user, author=author)
-        # serializer = SubscribeSerializer(
-        # author, context={'request': request})
+        # serializer = SubscribeSerializer(author,
+        # context={'request': request})
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    # user = request.user
+        # author = get_object_or_404(CustomUser, id=id)
+
+        # serializer = SubscriptionSerializer(
+        #     data={'user': user.id, 'author': author.id},
+        #     context={'request': request})
+        # serializer.is_valid(raise_exception=True)
+        # subscription = serializer.save()
+        # response_serializer = SubscribeSerializer(
+        #     subscription.author, context={'request': request})
+
+        # return Response(
+        #     response_serializer.data, status=status.HTTP_201_CREATED)
+        # Subscription.objects.create(user=request.user, author=author)
         # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete

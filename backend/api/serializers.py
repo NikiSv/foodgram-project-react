@@ -83,20 +83,40 @@ class SubscriptionSerializer(ModelSerializer):
         #     fields=('user', 'author'),
         #     message='Подписка уже существует')]
 
+    # def validate(self, data):
+    #     user = data['user']
+    #     author = data['author']
+
+    #     if user == author:
+    #         raise ValidationError('Нельзя подписываться на себя')
+    #     subscription = Subscription.objects.filter(
+    #         user=user, author=author).first()
+    #     if not subscription:
+    #         raise ValidationError('Подписка не найдена')
+    #     return data
+
+    # def create(self, validated_data):
+    #     return Subscription.objects.create(**validated_data)
     def validate(self, data):
         user = data['user']
         author = data['author']
 
         if user == author:
-            raise ValidationError('Нельзя подписываться на себя')
+            raise ValidationError('Нельзя подписываться на самого себя')
+
         subscription = Subscription.objects.filter(
             user=user, author=author).first()
-        if not subscription:
-            raise ValidationError('Подписка не найдена')
+        if subscription:
+            raise ValidationError('Подписка уже существует')
+
         return data
 
     def create(self, validated_data):
-        return Subscription.objects.create(**validated_data)
+        user = validated_data['user']
+        author = validated_data['author']
+
+        subscription = Subscription.objects.create(user=user, author=author)
+        return subscription
 
 
 class TagSerializer(ModelSerializer):
