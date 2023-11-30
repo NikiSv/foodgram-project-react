@@ -21,7 +21,7 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
                           ShoppingCartSerializer, SubscribeSerializer,
                           TagSerializer)
-from .utils import pdf_drawer
+from .utils import create_model_instance, pdf_drawer
 
 
 class CustomUserViewSet(UserViewSet):
@@ -106,17 +106,20 @@ class RecipeViewSet(ModelViewSet):
         # except Recipe.DoesNotExist:
         #     return Response('Рецепт не существует',
         #                     status=status.HTTP_400_BAD_REQUEST)
-        recipe = Recipe.objects.get(id=pk)
-        serializer = FavoriteSerializer(
-            data={'user': request.user.id, 'recipe': recipe.id},
-            context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        recipe = get_object_or_404(Recipe, id=pk)
+        # # recipe = Recipe.objects.get(id=pk)
+        # serializer = FavoriteSerializer(
+        #     data={'user': request.user.id, 'recipe': recipe.id},
+        #     context={'request': request})
+        # serializer.is_valid(raise_exception=True)
+        # serializer.save()
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return create_model_instance(request, recipe, FavoriteSerializer)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
-        recipe = Recipe.objects.get(id=pk)
+        recipe = get_object_or_404(Recipe, id=pk)
+        # recipe = Recipe.objects.get(id=pk)
         favorite_item = Favorite.objects.get(user=request.user, recipe=recipe)
         favorite_item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -132,17 +135,19 @@ class RecipeViewSet(ModelViewSet):
     @action(detail=True, methods=['post'],
             permission_classes=[IsAuthorOrReadOnly])
     def shopping_cart(self, request, pk):
-        try:
-            recipe = Recipe.objects.get(id=pk)
-        except Recipe.DoesNotExist:
-            return Response('Рецепт не существует',
-                            status=status.HTTP_400_BAD_REQUEST)
-        serializer = ShoppingCartSerializer(
-            data={'user': request.user.id, 'recipe': recipe.id},
-            context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        recipe = get_object_or_404(Recipe, id=pk)
+        # try:
+        #     recipe = Recipe.objects.get(id=pk)
+        # except Recipe.DoesNotExist:
+        #     return Response('Рецепт не существует',
+        #                     status=status.HTTP_400_BAD_REQUEST)
+        # serializer = ShoppingCartSerializer(
+        #     data={'user': request.user.id, 'recipe': recipe.id},
+        #     context={'request': request})
+        # serializer.is_valid(raise_exception=True)
+        # serializer.save()
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return create_model_instance(request, recipe, ShoppingCartSerializer)
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
