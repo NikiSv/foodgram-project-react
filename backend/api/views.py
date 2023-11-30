@@ -20,7 +20,7 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           IngredientForRecipe, IngredientSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
                           ShoppingCartSerializer, SubscribeSerializer,
-                          TagSerializer)
+                          SubscriptionSerializer, TagSerializer)
 from .utils import create_model_instance, delete_model_instance, pdf_drawer
 
 
@@ -34,14 +34,25 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, id):
         user = request.user
         author = get_object_or_404(CustomUser, id=id)
-        subscription = Subscription.objects.filter(
-            user=user, author=author).first()
-        if subscription:
-            return Response('Подписка уже существует',
-                            status=status.HTTP_400_BAD_REQUEST)
-        Subscription.objects.create(user=request.user, author=author)
+
+        serializer_sub = SubscriptionSerializer(
+            data={'user': user.id, 'author': author.id},
+            context={'request': request})
+        serializer_sub.is_valid(raise_exception=True)
+        serializer_sub.save()
+
         serializer = SubscribeSerializer(author, context={'request': request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # user = request.user
+        # author = get_object_or_404(CustomUser, id=id)
+        # subscription = Subscription.objects.filter(
+        #     user=user, author=author).first()
+        # if subscription:
+        #     return Response('Подписка уже существует',
+        #                     status=status.HTTP_400_BAD_REQUEST)
+        # Subscription.objects.create(user=request.user, author=author)
+        # serializer = SubscribeSerializer(author, context={'request': request})
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
     def delete_subscribe(self, request, id):
@@ -107,37 +118,13 @@ class RecipeViewSet(ModelViewSet):
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
-        # recipe = Recipe.objects.get(id=pk)
-        # favorite_item = Favorite.objects.get(
-        # user=request.user, recipe=recipe)
-        # favorite_item.delete()
-        # return Response(status=status.HTTP_204_NO_CONTENT)
         error_message = 'Рецепт не был добавлен в избранное'
         return delete_model_instance(request, Favorite, recipe, error_message)
-        # try:
-        #     favorite_item = Favorite.objects.get(
-        #         user=request.user, recipe=recipe)
-        #     favorite_item.delete()
-        #     return Response(status=status.HTTP_204_NO_CONTENT)
-        # except Favorite.DoesNotExist:
-        #     return Response('Рецепт не был добавлен в избранное',
-        #                     status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post'],
             permission_classes=[IsAuthorOrReadOnly])
     def shopping_cart(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
-        # try:
-        #     recipe = Recipe.objects.get(id=pk)
-        # except Recipe.DoesNotExist:
-        #     return Response('Рецепт не существует',
-        #                     status=status.HTTP_400_BAD_REQUEST)
-        # serializer = ShoppingCartSerializer(
-        #     data={'user': request.user.id, 'recipe': recipe.id},
-        #     context={'request': request})
-        # serializer.is_valid(raise_exception=True)
-        # serializer.save()
-        # return Response(serializer.data, status=status.HTTP_201_CREATED)
         return create_model_instance(request, recipe, ShoppingCartSerializer)
 
     @shopping_cart.mapping.delete
@@ -146,14 +133,6 @@ class RecipeViewSet(ModelViewSet):
         error_message = 'Рецепт не был добавлен в список покупок'
         return delete_model_instance(request, ShoppingCart,
                                      recipe, error_message)
-        # try:
-        #     shopping_cart = ShoppingCart.objects.get(
-        #         user=request.user, recipe=recipe)
-        #     shopping_cart.delete()
-        #     return Response(status=status.HTTP_204_NO_CONTENT)
-        # except ShoppingCart.DoesNotExist:
-        #     return Response('Рецепт не был добавлен в список покупок',
-        #                     status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthorOrReadOnly])
