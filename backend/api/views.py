@@ -32,57 +32,16 @@ class CustomUserViewSet(UserViewSet):
     @action(detail=True, methods=['post'],
             url_path='subscribe', permission_classes=[IsAuthorOrReadOnly])
     def subscribe(self, request, id):
-        user = self.get_user(id)
-        serializer = SubscriptionSerializer(
-            data={'author': user.id},
-            context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        subscription = serializer.save(user=request.user)
-        return Response(SubscriptionSerializer(
-            subscription,
-            context={'request': request}).data,
-            status=status.HTTP_201_CREATED)
-        # user = request.user
-        # author = get_object_or_404(CustomUser, id=id)
-
-        # serializer = SubscriptionSerializer(
-        #     data={'user': user.id, 'author': author.id},
-        #     context={'request': request})
-        # serializer.is_valid(raise_exception=True)
-        # subscription = serializer.save()
-
-        # response_serializer = SubscribeSerializer(
-        #     subscription.author, context={'request': request})
-
-        # return Response(response_serializer.data,
-        #                 status=status.HTTP_201_CREATED)
-        # user = request.user
-        # author = get_object_or_404(CustomUser, id=id)
-        # subscription = Subscription.objects.filter(
-        #     user=user, author=author).first()
-        # if subscription:
-        #     return Response('Подписка уже существует',
-        #                     status=status.HTTP_400_BAD_REQUEST)
-        # Subscription.objects.create(user=request.user, author=author)
-        # serializer = SubscribeSerializer(author,
-        # context={'request': request})
-        # return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # user = request.user
-        # author = get_object_or_404(CustomUser, id=id)
-
-        # serializer = SubscriptionSerializer(
-        #     data={'user': user.id, 'author': author.id},
-        #     context={'request': request})
-        # serializer.is_valid(raise_exception=True)
-        # subscription = serializer.save()
-        # response_serializer = SubscribeSerializer(
-        #     subscription.author, context={'request': request})
-
-        # return Response(
-        #     response_serializer.data, status=status.HTTP_201_CREATED)
-        # Subscription.objects.create(user=request.user, author=author)
-        # return Response(serializer.data, status=status.HTTP_201_CREATED)
+        user = request.user
+        author = get_object_or_404(CustomUser, id=id)
+        subscription = Subscription.objects.filter(
+            user=user, author=author).first()
+        if subscription:
+            return Response('Подписка уже существует',
+                            status=status.HTTP_400_BAD_REQUEST)
+        Subscription.objects.create(user=request.user, author=author)
+        serializer = SubscribeSerializer(author, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
     def delete_subscribe(self, request, id):
