@@ -87,8 +87,6 @@ class SubscriptionSerializer(ModelSerializer):
             raise ValidationError('Нельзя подписываться на себя')
         subscription = Subscription.objects.filter(
             user=user, author=author).first()
-        if subscription:
-            raise ValidationError('Подписка уже существует')
         if not subscription:
             raise ValidationError('Подписка не найдена')
 
