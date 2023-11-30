@@ -20,7 +20,7 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           IngredientForRecipe, IngredientSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
                           ShoppingCartSerializer, SubscribeSerializer,
-                          SubscriptionSerializer, TagSerializer)
+                          TagSerializer)
 from .utils import create_model_instance, delete_model_instance, pdf_drawer
 
 
