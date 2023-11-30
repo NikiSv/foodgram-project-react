@@ -21,7 +21,7 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
                           ShoppingCartSerializer, SubscribeSerializer,
                           TagSerializer)
-from .utils import create_model_instance, pdf_drawer
+from .utils import create_model_instance, delete_model_instance, pdf_drawer
 
 
 class CustomUserViewSet(UserViewSet):
@@ -101,28 +101,19 @@ class RecipeViewSet(ModelViewSet):
     @action(detail=True, methods=['post'],
             permission_classes=[IsAuthorOrReadOnly])
     def favorite(self, request, pk):
-        # try:
-        #     recipe = Recipe.objects.get(id=pk)
-        # except Recipe.DoesNotExist:
-        #     return Response('Рецепт не существует',
-        #                     status=status.HTTP_400_BAD_REQUEST)
         recipe = get_object_or_404(Recipe, id=pk)
-        # # recipe = Recipe.objects.get(id=pk)
-        # serializer = FavoriteSerializer(
-        #     data={'user': request.user.id, 'recipe': recipe.id},
-        #     context={'request': request})
-        # serializer.is_valid(raise_exception=True)
-        # serializer.save()
-        # return Response(serializer.data, status=status.HTTP_201_CREATED)
         return create_model_instance(request, recipe, FavoriteSerializer)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
         # recipe = Recipe.objects.get(id=pk)
-        favorite_item = Favorite.objects.get(user=request.user, recipe=recipe)
-        favorite_item.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        # favorite_item = Favorite.objects.get(
+        # user=request.user, recipe=recipe)
+        # favorite_item.delete()
+        # return Response(status=status.HTTP_204_NO_CONTENT)
+        error_message = 'Рецепт не был добавлен в избранное'
+        return delete_model_instance(request, Favorite, recipe, error_message)
         # try:
         #     favorite_item = Favorite.objects.get(
         #         user=request.user, recipe=recipe)
@@ -152,14 +143,17 @@ class RecipeViewSet(ModelViewSet):
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
         recipe = Recipe.objects.get(id=pk)
-        try:
-            shopping_cart = Favorite.objects.get(
-                user=request.user, recipe=recipe)
-            shopping_cart.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except ShoppingCart.DoesNotExist:
-            return Response('Рецепт не был добавлен в список покупок',
-                            status=status.HTTP_400_BAD_REQUEST)
+        error_message = 'Рецепт не был добавлен в список покупок'
+        return delete_model_instance(request, ShoppingCart,
+                                     recipe, error_message)
+        # try:
+        #     shopping_cart = ShoppingCart.objects.get(
+        #         user=request.user, recipe=recipe)
+        #     shopping_cart.delete()
+        #     return Response(status=status.HTTP_204_NO_CONTENT)
+        # except ShoppingCart.DoesNotExist:
+        #     return Response('Рецепт не был добавлен в список покупок',
+        #                     status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'],
             permission_classes=[IsAuthorOrReadOnly])

@@ -20,13 +20,9 @@ def pdf_drawer(pdf, unit, ingredient_totals):
 
 
 def create_model_instance(request, instance, serializer_name):
-    """Вспомогательная функция для добавления
-    рецепта в избранное либо список покупок.
-    """
     serializer = serializer_name(
         data={'user': request.user.id, 'recipe': instance.id, },
-        context={'request': request}
-    )
+        context={'request': request})
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
