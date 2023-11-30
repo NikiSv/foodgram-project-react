@@ -208,17 +208,13 @@ class RecipeCreateSerializer(ModelSerializer):
         return False
 
     def to_representation(self, instance):
-        # request = self.context.get('request')
-        # serializer = RecipeReadSerializer(
-        #     instance, context={'request': request})
-        # return serializer.data
         return RecipeReadSerializer(instance, context=self.context).data
 
 
 class RecipeReadSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = CustomUserSerializer(read_only=True)
-    ingredients = SerializerMethodField(many=True, read_only=True)
+    ingredients = SerializerMethodField()
     is_favorited = SerializerMethodField(read_only=True)
     is_in_shopping_cart = SerializerMethodField(read_only=True)
     image = Base64ImageField(required=True)
