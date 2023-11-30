@@ -137,7 +137,7 @@ class RecipeViewSet(ModelViewSet):
         #     return Response('Рецепт не был добавлен в избранное',
         #                     status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=['post', 'delete'],
+    @action(detail=True, methods=['post'],
             permission_classes=[IsAuthorOrReadOnly])
     def shopping_cart(self, request, pk):
         try:
