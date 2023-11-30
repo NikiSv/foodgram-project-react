@@ -69,12 +69,12 @@ class SubscribeSerializer(CustomUserSerializer):
     def get_recipes_count(self, user):
         return user.recipes.count()
 
-    def validate(self, data):
-        user = self.context.get('request').user
-        author = self.instance
-        if user == author:
-            raise ValidationError('Нельзя подписаться на самого себя')
-        return data
+    # def validate(self, data):
+    #     user = self.context.get('request').user
+    #     author_id = data.get('id')  # Получаем id автора из запроса
+    #     if user.id == author_id:
+    #         raise ValidationError('Нельзя подписаться на самого себя')
+    #     return data
 
 
 # class SubscriptionSerializer(ModelSerializer):
@@ -275,7 +275,19 @@ class FavoriteSerializer(FavoriteOrShoppingCartSerializer):
         validators = [UniqueTogetherValidator(
             queryset=Favorite.objects.all(),
             fields=('user', 'recipe'),
-            message='Вы уже добавили этот рецепт в избранное')]
+            message='Рецепт уже добавлен в избранное')]
+
+    def validate(self, attrs):
+        user = self.context['request'].user
+        recipe = attrs['recipe']
+        if self.context['request'].method == 'DELETE':
+            if not Favorite.objects.filter(user=user, recipe=recipe).exists():
+                raise ValidationError(
+                    'Рецепт не был добавлен в избранное')
+        return attrs
+
+    def create(self, validated_data):
+        return Favorite.objects.create(**validated_data)
 
 
 class ShoppingCartSerializer(FavoriteOrShoppingCartSerializer):
@@ -292,7 +304,7 @@ class ShortCartRecipeSerializer(ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
-        validators = [UniqueTogetherValidator(
-            queryset=ShoppingCart.objects.all(),
-            fields=('user', 'recipe'),
-            message='Вы уже добавили этот рецепт в список покупок')]
+        # validators = [UniqueTogetherValidator(
+        #     queryset=ShoppingCart.objects.all(),
+        #     fields=('user', 'recipe'),
+        #     message='Вы уже добавили этот рецепт в список покупок')]
