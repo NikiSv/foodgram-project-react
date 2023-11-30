@@ -3,8 +3,8 @@ from io import BytesIO
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+# from reportlab.pdfbase import pdfmetrics
+# from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from rest_framework import status
 from rest_framework.decorators import action
@@ -23,6 +23,7 @@ from .serializers import (CustomUserSerializer, FavoriteSerializer,
                           RecipeCreateSerializer, RecipeReadSerializer,
                           ShoppingCartSerializer, SubscribeSerializer,
                           TagSerializer)
+from .utils import pdf_drawer
 
 
 class CustomUserViewSet(UserViewSet):
@@ -121,10 +122,10 @@ class RecipeViewSet(ModelViewSet):
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
         recipe = Recipe.objects.get(id=pk)
-        serializer = FavoriteSerializer(
-            data={'user': request.user.id, 'recipe': recipe.id},
-            context={'request': request})
-        serializer.is_valid(raise_exception=True)
+        # serializer = FavoriteSerializer(
+        #     data={'user': request.user.id, 'recipe': recipe.id},
+        #     context={'request': request})
+        # serializer.is_valid(raise_exception=True)
         favorite_item = Favorite.objects.get(user=request.user, recipe=recipe)
         favorite_item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -164,11 +165,8 @@ class RecipeViewSet(ModelViewSet):
             return Response('Рецепт не был добавлен в список покупок',
                             status=status.HTTP_400_BAD_REQUEST)
 
-    @action(
-        detail=False,
-        methods=['get'],
-        permission_classes=[IsAuthorOrReadOnly]
-    )
+    @action(detail=False, methods=['get'],
+            permission_classes=[IsAuthorOrReadOnly])
     def download_shopping_cart(self, request):
         shopping_cart_user = ShoppingCart.objects.filter(user=request.user)
         ingredient_data = IngredientForRecipe.objects.filter(
@@ -187,18 +185,19 @@ class RecipeViewSet(ModelViewSet):
 
         buffer = BytesIO()
         pdf = canvas.Canvas(buffer)
-        pdfmetrics.registerFont(TTFont('DejaVuSerif-Bold',
-                                       'DejaVuSerif-Bold.ttf'))
-        pdf.setFont('DejaVuSerif-Bold', 14)
-        pdf.drawString(100, 50, ' ')
-        y = 670
-        page_height = 800
-        for name, total_amount in ingredient_totals.items():
-            pdf.drawString(100, y, f'{name} ({unit}) - {total_amount} ')
-            y -= 20
-            if y < 50:
-                pdf.showPage()
-                y = page_height - 50
+        pdf_drawer(pdf, unit, ingredient_totals)
+        # pdfmetrics.registerFont(TTFont('DejaVuSerif-Bold',
+        #                                'DejaVuSerif-Bold.ttf'))
+        # pdf.setFont('DejaVuSerif-Bold', 14)
+        # pdf.drawString(100, 50, ' ')
+        # y = 670
+        # page_height = 800
+        # for name, total_amount in ingredient_totals.items():
+        #     pdf.drawString(100, y, f'{name} ({unit}) - {total_amount} ')
+        #     y -= 20
+        #     if y < 50:
+        #         pdf.showPage()
+        #         y = page_height - 50
 
         pdf.save()
         buffer.seek(0)
