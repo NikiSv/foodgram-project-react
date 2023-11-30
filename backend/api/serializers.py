@@ -31,6 +31,11 @@ class CustomUserSerializer(UserSerializer):
 class CustomUserRegistrationSerializer(UserCreateSerializer):
     username = CharField(max_length=150)
 
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'email', 'username',
+                  'first_name', 'last_name', 'password')
+
     def validate_username(self, data):
         pattern = r'^[\w.@+-]+$'
         if not re.match(pattern, data):
@@ -39,11 +44,6 @@ class CustomUserRegistrationSerializer(UserCreateSerializer):
         if CustomUser.objects.filter(username=data).exists():
             raise ValidationError('Пользователь с таким именем уже существует')
         return data
-
-    class Meta:
-        model = CustomUser
-        fields = ('id', 'email', 'username',
-                  'first_name', 'last_name', 'password')
 
 
 class SubscribeSerializer(CustomUserSerializer):
@@ -57,6 +57,13 @@ class SubscribeSerializer(CustomUserSerializer):
         read_only_fields = ('email', 'username', 'first_name', 'last_name',
                             'is_subscribed', 'recipes', 'recipes_count')
 
+    def validate(self, data):
+        # Проверяем, чтобы пользователь не мог подписаться на самого себя
+        request = self.context.get('request')
+        if request.user == self.instance:
+            raise ValidationError('Нельзя подписаться на самого себя')
+        return data
+
     def get_recipes(self, user):
         recipes = Recipe.objects.filter(author=user)
         recipes_limit = self.context.get('request').query_params.get(
@@ -68,13 +75,6 @@ class SubscribeSerializer(CustomUserSerializer):
 
     def get_recipes_count(self, user):
         return user.recipes.count()
-
-    # def validate(self, data):
-    #     user = self.context.get('request').user
-    #     author_id = data.get('id')  # Получаем id автора из запроса
-    #     if user.id == author_id:
-    #         raise ValidationError('Нельзя подписаться на самого себя')
-    #     return data
 
 
 # class SubscriptionSerializer(ModelSerializer):
