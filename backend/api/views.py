@@ -32,20 +32,30 @@ class CustomUserViewSet(UserViewSet):
     @action(detail=True, methods=['post'],
             url_path='subscribe', permission_classes=[IsAuthorOrReadOnly])
     def subscribe(self, request, id):
-        user = request.user
-        author = get_object_or_404(CustomUser, id=id)
-
+        user = self.get_user(id)
         serializer = SubscriptionSerializer(
-            data={'user': user.id, 'author': author.id},
+            data={'author': user.id},
             context={'request': request})
         serializer.is_valid(raise_exception=True)
-        subscription = serializer.save()
+        subscription = serializer.save(user=request.user)
+        return Response(SubscriptionSerializer(
+            subscription,
+            context={'request': request}).data,
+            status=status.HTTP_201_CREATED)
+        # user = request.user
+        # author = get_object_or_404(CustomUser, id=id)
 
-        response_serializer = SubscribeSerializer(
-            subscription.author, context={'request': request})
+        # serializer = SubscriptionSerializer(
+        #     data={'user': user.id, 'author': author.id},
+        #     context={'request': request})
+        # serializer.is_valid(raise_exception=True)
+        # subscription = serializer.save()
 
-        return Response(response_serializer.data,
-                        status=status.HTTP_201_CREATED)
+        # response_serializer = SubscribeSerializer(
+        #     subscription.author, context={'request': request})
+
+        # return Response(response_serializer.data,
+        #                 status=status.HTTP_201_CREATED)
         # user = request.user
         # author = get_object_or_404(CustomUser, id=id)
         # subscription = Subscription.objects.filter(
