@@ -57,13 +57,6 @@ class SubscribeSerializer(CustomUserSerializer):
         read_only_fields = ('email', 'username', 'first_name', 'last_name',
                             'is_subscribed', 'recipes', 'recipes_count')
 
-    def validate(self, data):
-        # Проверяем, чтобы пользователь не мог подписаться на самого себя
-        request = self.context.get('request')
-        if request.user == self.instance:
-            raise ValidationError('Нельзя подписаться на самого себя')
-        return data
-
     def get_recipes(self, user):
         recipes = Recipe.objects.filter(author=user)
         recipes_limit = self.context.get('request').query_params.get(
@@ -77,20 +70,14 @@ class SubscribeSerializer(CustomUserSerializer):
         return user.recipes.count()
 
 
-# class SubscriptionSerializer(ModelSerializer):
-#     user = PrimaryKeyRelatedField(read_only=True)
-#     author = PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-
-#     class Meta:
-#         model = Subscription
-#         fields = ('user', 'author')
-
-#     def validate(self, data):
-#         user = data.get('user')
-#         author = data.get('author')
-#         if user == author:
-#             raise ValidationError('Нельзя подписаться на самого себя')
-#         return data
+class SubscriptionSerializer(ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ('user', 'author')
+        validators = [UniqueTogetherValidator(
+            queryset=Favorite.objects.all(),
+            fields=('user', 'author'),
+            message='Нельзя подписаться на самого себя')]
 
 
 class TagSerializer(ModelSerializer):
