@@ -47,7 +47,6 @@ class CustomUserRegistrationSerializer(UserCreateSerializer):
 
 
 class SubscribeSerializer(CustomUserSerializer):
-    is_subscribed = SerializerMethodField()
     recipes = SerializerMethodField()
     recipes_count = SerializerMethodField()
 
@@ -95,10 +94,10 @@ class SubscriptionSerializer(ModelSerializer):
 
         return data
 
-    # def to_representation(self, instance):
-    #     request = self.context.get('request')
-    #     return SubscribeSerializer(
-    #         instance.author, context={'request': request}).data
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        return SubscribeSerializer(
+            instance.author, context={'request': request}).data
 
 
 class TagSerializer(ModelSerializer):

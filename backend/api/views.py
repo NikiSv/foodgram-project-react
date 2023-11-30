@@ -35,13 +35,11 @@ class CustomUserViewSet(UserViewSet):
         user = request.user
         author = get_object_or_404(CustomUser, id=id)
 
-        serializer_sub = SubscriptionSerializer(
+        serializer = SubscriptionSerializer(
             data={'user': user.id, 'author': author.id},
             context={'request': request})
-        serializer_sub.is_valid(raise_exception=True)
-        serializer_sub.save()
-
-        serializer = SubscribeSerializer(author, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
         # user = request.user
         # author = get_object_or_404(CustomUser, id=id)
