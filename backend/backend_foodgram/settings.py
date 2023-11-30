@@ -9,8 +9,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='token')
 
-# DEBUG = bool(os.getenv('DEBUG', 'False').lower())
-DEBUG = False
+DEBUG = bool(os.getenv('DEBUG', 'False').lower())
+
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='eatgram.ddns.net').split(',')
 
 INSTALLED_APPS = [
