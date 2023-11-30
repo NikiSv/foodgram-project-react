@@ -47,7 +47,6 @@ class CustomUserRegistrationSerializer(UserCreateSerializer):
 
 
 class SubscribeSerializer(CustomUserSerializer):
-    is_subscribed = SerializerMethodField()
     recipes = SerializerMethodField()
     recipes_count = SerializerMethodField()
 
@@ -71,52 +70,26 @@ class SubscribeSerializer(CustomUserSerializer):
         return user.recipes.count()
 
 
-class SubscriptionSerializer(ModelSerializer):
-    user = PrimaryKeyRelatedField(read_only=True)
-    author = PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+# class SubscriptionSerializer(ModelSerializer):
+#     class Meta:
+#         model = Subscription
+#         fields = ('user', 'author')
+#         validators = [UniqueTogetherValidator(
+#             queryset=Subscription.objects.all(),
+#             fields=('user', 'author'),
+#             message='Подписка уже существует')]
 
-    class Meta:
-        model = Subscription
-        fields = ('user', 'author')
-        validators = [UniqueTogetherValidator(
-            queryset=Subscription.objects.all(),
-            fields=('user', 'author'),
-            message='Подписка уже существует')]
+#     def validate(self, data):
+#         user = data['user']
+#         author = data['author']
 
-    def validate(self, data):
-        user = data['user']
-        author = data['author']
-
-        if user == author:
-            raise ValidationError('Нельзя подписываться на себя')
-        subscription = Subscription.objects.filter(
-            user=user, author=author).first()
-        if not subscription:
-            raise ValidationError('Подписка не найдена')
-        return data
-
-    # def create(self, validated_data):
-    #     return Subscription.objects.create(**validated_data)
-    # def validate(self, data):
-    #     user = data['user']
-    #     author = data['author']
-
-    #     if user == author:
-    #         raise ValidationError('Нельзя подписываться на самого себя')
-
-    #     subscription = Subscription.objects.filter(
-    #         user=user, author=author).first()
-    #     if subscription:
-    #         raise ValidationError('Подписка уже существует')
-
-    #     return data
-
-    # def create(self, validated_data):
-    #     user = validated_data['user']
-    #     author = validated_data['author']
-
-    #     subscription = Subscription.objects.create(user=user, author=author)
-    #     return subscription
+#         if user == author:
+#             raise ValidationError('Нельзя подписываться на себя')
+#         subscription = Subscription.objects.filter(
+#             user=user, author=author).first()
+#         if not subscription:
+#             raise ValidationError('Подписка не найдена')
+#         return data
 
 
 class TagSerializer(ModelSerializer):
@@ -235,16 +208,17 @@ class RecipeCreateSerializer(ModelSerializer):
         return False
 
     def to_representation(self, instance):
-        request = self.context.get('request')
-        serializer = RecipeReadSerializer(
-            instance, context={'request': request})
-        return serializer.data
+        # request = self.context.get('request')
+        # serializer = RecipeReadSerializer(
+        #     instance, context={'request': request})
+        # return serializer.data
+        return RecipeReadSerializer(instance, context=self.context).data
 
 
 class RecipeReadSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = CustomUserSerializer(read_only=True)
-    ingredients = SerializerMethodField()
+    ingredients = SerializerMethodField(many=True, read_only=True)
     is_favorited = SerializerMethodField(read_only=True)
     is_in_shopping_cart = SerializerMethodField(read_only=True)
     image = Base64ImageField(required=True)
