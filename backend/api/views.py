@@ -119,7 +119,7 @@ class RecipeViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @favorite.mapping.delete
-    def favorite(self, request, pk):
+    def delete_favorite(self, request, pk):
         recipe = Recipe.objects.get(id=pk)
         serializer = FavoriteSerializer(
             data={'user': request.user.id, 'recipe': recipe.id},
@@ -153,7 +153,7 @@ class RecipeViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @shopping_cart.mapping.delete
-    def shopping_cart(self, request, pk):
+    def delete_shopping_cart(self, request, pk):
         recipe = Recipe.objects.get(id=pk)
         try:
             shopping_cart = Favorite.objects.get(
