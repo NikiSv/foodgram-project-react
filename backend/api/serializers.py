@@ -90,7 +90,7 @@ class SubscriptionSerializer(ModelSerializer):
         if subscription:
             raise ValidationError('Подписка уже существует')
         if not subscription:
-            return ValidationError('Подписка не найдена')
+            raise ValidationError('Подписка не найдена')
 
         return data
 
