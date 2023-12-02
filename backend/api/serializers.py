@@ -242,6 +242,7 @@ class FavoriteOrShoppingCartSerializer(ModelSerializer):
 
 
 class FavoriteSerializer(FavoriteOrShoppingCartSerializer):
+
     class Meta:
         model = Favorite
         fields = '__all__'
