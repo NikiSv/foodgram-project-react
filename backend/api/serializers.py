@@ -70,28 +70,6 @@ class SubscribeSerializer(CustomUserSerializer):
         return user.recipes.count()
 
 
-# class SubscriptionSerializer(ModelSerializer):
-#     class Meta:
-#         model = Subscription
-#         fields = ('user', 'author')
-#         validators = [UniqueTogetherValidator(
-#             queryset=Subscription.objects.all(),
-#             fields=('user', 'author'),
-#             message='Подписка уже существует')]
-
-#     def validate(self, data):
-#         user = data['user']
-#         author = data['author']
-
-#         if user == author:
-#             raise ValidationError('Нельзя подписываться на себя')
-#         subscription = Subscription.objects.filter(
-#             user=user, author=author).first()
-#         if not subscription:
-#             raise ValidationError('Подписка не найдена')
-#         return data
-
-
 class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
@@ -134,33 +112,32 @@ class RecipeCreateSerializer(ModelSerializer):
         exclude = ('id', 'author')
 
     def validate(self, data):
-        if self.context['request'].method == 'POST':
-            ingredients = data.get('ingredients', [])
-            if not ingredients:
-                raise ValidationError('Добавьте ингредиенты')
+        ingredients = data.get('ingredients', [])
+        if not ingredients:
+            raise ValidationError('Добавьте ингредиенты')
 
-            ingredient_ids = set()
-            for ingredient_data in ingredients:
-                ingredient = ingredient_data.get('ingredient')
-                if not ingredient:
-                    raise ValidationError('Ингредиент не может быть пустым')
+        ingredient_ids = set()
+        for ingredient_data in ingredients:
+            ingredient = ingredient_data.get('ingredient')
+            if not ingredient:
+                raise ValidationError('Ингредиент не может быть пустым')
 
-                ingredient_id = ingredient.id
-                if ingredient_id in ingredient_ids:
-                    raise ValidationError('Ингредиенты не могут повторяться')
-                ingredient_ids.add(ingredient_id)
+            ingredient_id = ingredient.id
+            if ingredient_id in ingredient_ids:
+                raise ValidationError('Ингредиенты не могут повторяться')
+            ingredient_ids.add(ingredient_id)
 
-            tags = data.get('tags')
-            if not tags:
-                raise ValidationError('Добавьте теги')
+        tags = data.get('tags')
+        if not tags:
+            raise ValidationError('Добавьте теги')
 
-            if len(tags) != len(set(tags)):
-                raise ValidationError('Теги не могут повторяться')
+        if len(tags) != len(set(tags)):
+            raise ValidationError('Теги не могут повторяться')
 
-            if not data.get('image'):
-                raise ValidationError('Добавьте изображение')
+        if not data.get('image'):
+            raise ValidationError('Добавьте изображение')
 
-            return data
+        return data
 
     @staticmethod
     def create_ingredients(ingredients, recipe):
@@ -300,7 +277,3 @@ class ShortCartRecipeSerializer(ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
-        # validators = [UniqueTogetherValidator(
-        #     queryset=ShoppingCart.objects.all(),
-        #     fields=('user', 'recipe'),
-        #     message='Вы уже добавили этот рецепт в список покупок')]
