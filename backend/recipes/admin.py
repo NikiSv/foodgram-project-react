@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin import display
 
-# from .form import TagAdminForm
 from .models import (Favorite, Ingredient, IngredientForRecipe, Recipe,
                      ShoppingCart, Tag)
 
@@ -33,7 +32,7 @@ class RecipeAdmin(admin.ModelAdmin):
     model = Recipe
     list_display = ('name', 'author', 'count_in_favorites')
     list_filter = ('name', 'author', 'tags',)
-    inlines = [IngredientForRecipe]
+    inlines = [IngredientForRecipeAdmin]
 
     @display(description='Сколько раз добавили в избранное')
     def count_in_favorites(self, obj):
