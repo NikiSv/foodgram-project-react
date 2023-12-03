@@ -21,7 +21,6 @@ class IngredientAdmin(admin.ModelAdmin):
     list_filter = ('name',)
 
 
-@admin.register(IngredientForRecipe)
 class IngredientForRecipeAdmin(admin.TabularInline):
     model = IngredientForRecipe
     list_display = ('recipe', 'ingredient', 'amount',)
