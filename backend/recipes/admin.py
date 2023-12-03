@@ -23,7 +23,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 
 @admin.register(IngredientForRecipe)
-class IngredientForRecipeAdmin(admin.ModelAdmin):
+class IngredientForRecipeAdmin(admin.TabularInline):
     model = IngredientForRecipe
     list_display = ('recipe', 'ingredient', 'amount',)
 
@@ -33,6 +33,7 @@ class RecipeAdmin(admin.ModelAdmin):
     model = Recipe
     list_display = ('name', 'author', 'count_in_favorites')
     list_filter = ('name', 'author', 'tags',)
+    inlines = [IngredientForRecipe]
 
     @display(description='Сколько раз добавили в избранное')
     def count_in_favorites(self, obj):
